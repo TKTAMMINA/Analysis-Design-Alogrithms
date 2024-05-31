@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Function prototypes
+void generatePermutations(int n);
+void printPermutation(int *permutation, int n);
+bool mobile(int *permutation, bool *direction, int n, int pos);
+void swap(int *a, int *b);
+void swapBool(bool *a, bool *b);
+
+// Main function
+int main() {
+    int n;
+    printf("Enter the number of elements: ");
+    scanf("%d", &n);
+    generatePermutations(n);
+    return 0;
+}
+
+// Function to generate permutations using Johnson-Trotter algorithm
+void generatePermutations(int n) {
+    int *permutation = malloc(n * sizeof(int));
+    bool *direction = malloc(n * sizeof(bool));
+
+    // Initialize the first permutation and direction
+    for (int i = 0; i < n; i++) {
+        permutation[i] = i + 1;
+        direction[i] = false; // false indicates LEFT_TO_RIGHT, true indicates RIGHT_TO_LEFT
+    }
+
+    bool morePermutations = true;
+    while (morePermutations) {
+        printPermutation(permutation, n);
+
+        // Step 1: Find the largest mobile integer
+        int mobileIndex = -1;
+        for (int i = 0; i < n; i++) {
+            if (mobile(permutation, direction, n, i)) {
+                if (mobileIndex == -1 || permutation[i] > permutation[mobileIndex]) {
+                    mobileIndex = i;
+                }
+            }
+        }
+
+        if (mobileIndex == -1) {
+            morePermutations = false;
+            break;
+        }
+
+        // Step 2: Swap the mobile integer with the adjacent element in the direction
+        int swapIndex = mobileIndex + (direction[mobileIndex] ? 1 : -1);
+        swap(&permutation[mobileIndex], &permutation[swapIndex]);
+        swapBool(&direction[mobileIndex], &direction[swapIndex]);
+
+        // Step 3: Reverse the direction of all elements greater than the mobile integer
+        for (int i = 0; i < n; i++) {
+            if (permutation[i] > permutation[swapIndex]) {
+                direction[i] = !direction[i];
+            }
+        }
+    }
+
+    // Clean up
+    free(permutation);
+    free(direction);
+}
+
+// Function to print a permutation
+void printPermutation(int *permutation, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", permutation[i]);
+    }
+    printf("\n");
+}
+
+// Function to check if the current element is mobile
+bool mobile(int *permutation, bool *direction, int n, int pos) {
+    if (direction[pos] == false && pos != 0 && permutation[pos] > permutation[pos - 1]) {
+        return true;
+    }
+    if (direction[pos] == true && pos != n - 1 && permutation[pos] > permutation[pos + 1]) {
+        return true;
+    }
+    return false;
+}
+
+// Function to swap two integers
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Function to swap two boolean values
+void swapBool(bool *a, bool *b) {
+    bool temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
